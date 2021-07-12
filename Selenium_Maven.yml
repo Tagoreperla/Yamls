@@ -1,0 +1,54 @@
+
+stages:
+  - build
+  - test-smoke
+
+image: "maven:latest"  
+  
+variables: 
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  TESTTYPE: $TESTTYPE
+
+build:
+ stage: build
+ rules:
+   - if: '$TESTTYPE =~ /^(Test1|Test2)$/'
+     when: always
+     allow_failure: true
+ script:
+   - "mvn $MAVEN_CLI_OPTS compile"
+   - |
+      echo "TESTTYPE=[$TESTTYPE]"
+	  echo "TESTTYPE=[$TESTTYPE]"
+
+Tests_With_XML:
+ stage: test
+ rules:
+    - if: '$TESTTYPE == "XmlTests"'
+      when: always
+      allow_failure: true
+ variables:
+   VAR1: $VAR1
+ artifacts:
+   paths: 
+    - target/Results
+   when: always 
+ script: 
+   - "mvn clean test -Dsurefire.suiteXmlFiles=./XmlTests.xml"
+ cache: {}
+ dependencies: []
+
+Test_Conditional_ShellSCript:
+ stage: test
+ script: 
+   - if [ "$TESTTYPE" == "" ]; then TESTVAL=""; else TESTVAL="Test1";
+   - "mvn $MAVEN_CLI_OPTS -DVARIABLE1=$VARIABLE1 test"
+
+   - "mvn $MAVEN_CLI_OPTS -DVARIABLE1=$VARIABLE1 -Dtest='Smoke' test"
+ cache: {}
+ dependencies: []
+
+cache: 
+    paths: 
+    - .m2/repository/
